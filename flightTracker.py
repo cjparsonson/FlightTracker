@@ -3,6 +3,7 @@ import requests
 from dotenv import load_dotenv
 import os
 import folium
+import datetime
 
 load_dotenv()
 
@@ -11,12 +12,16 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 # API URL
 API_URL = "http://api.aviationstack.com/v1/flights"
+# FLIGHT LABS
+FL_API_KEY = os.getenv("FLIGHTLAB_API_KEY")
+# FLIGHT LABS API URL
+FL_API_URL = "https://airlabs.co/api/v9/flights"
 # EZE Coordinates
 EZE_LAT = -34.814782053586775
 EZE_LON = -58.54361745304692
 
-AIRLINE=os.getenv("AIRLINE_NAME")
-FL_IATA=os.getenv("FLIGHT_IATA")
+AIRLINE = os.getenv("AIRLINE_NAME")
+FL_IATA = os.getenv("FLIGHT_IATA")
 # Parameters
 PARAMS = {
     "access_key": API_KEY,
@@ -24,6 +29,12 @@ PARAMS = {
     "airline_name": AIRLINE,
     "flight_iata": FL_IATA,
 }
+
+FL_PARAMS = {
+    "api_key": FL_API_KEY,
+    "flight_iata": FL_IATA
+}
+
 
 # Functions
 def get_flight_data() -> dict:
@@ -36,10 +47,25 @@ def get_flight_data() -> dict:
     # Return data
     try:
         for flight in data["data"]:
-            if flight["flight_date"] == "2023-06-05": # The date of the flight we want to track
+            if flight["flight_date"] == "2023-06-05":  # The date of the flight we want to track
                 return flight
     except IndexError:
-        return "No flight found."
+        return {"Flight": "No flight found."}
+
+
+def get_flight_location() -> dict:
+    """Gets flight location from API"""
+    # Make API call
+    response = requests.get(FL_API_URL, params=FL_PARAMS)
+    response.raise_for_status()
+    # Convert response to JSON
+    data = response.json()
+    # Return data
+    try:
+        return data
+    except IndexError:
+        return {"Flight": "No flight found."}
+
 
 def create_map(latitude: float, longitude: float) -> None:
     """Creates map"""
@@ -63,8 +89,29 @@ def print_link_to_map() -> None:
     print(f"file://{path}")
     print(f"file://{rel_path}")
 
+
+def print_flight_info(data: dict) -> None:
+    """Prints flight info"""
+    departure_time = datetime.datetime.fromisoformat(data["departure"]["actual"])
+    arrival_time = datetime.datetime.fromisoformat(data["arrival"]["scheduled"])
+    time_now = datetime.datetime.now()
+    time_argentina = time_now - datetime.timedelta(hours=4)
+    print(f"Flight: {data['flight']['iata']}")
+    print(f"Airline: {data['airline']['name']}")
+    print(f"Departure: {data['departure']['airport']}")
+    print(f"Arrival: {data['arrival']['airport']}")
+    print(f"Departure Time: {departure_time}")
+    print(f"Arrival Time: {arrival_time}")
+    print(f"Local Time: {time_argentina}")
+
+
 # Testing
 flight_data = get_flight_data()
-print(flight_data)
-create_map(EZE_LAT, EZE_LON)
+print_flight_info(flight_data)
+
+flight_location = get_flight_location()
+map_lat = flight_location["response"][0]["lat"]
+map_lon = flight_location["response"][0]["lng"]
+create_map(map_lat, map_lon)
+
 print_link_to_map()
