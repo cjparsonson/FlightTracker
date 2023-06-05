@@ -10,12 +10,15 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY")
 # API URL
 API_URL = "http://api.aviationstack.com/v1/flights"
+
+AIRLINE=os.getenv("AIRLINE_NAME")
+FL_IATA=os.getenv("FLIGHT_IATA")
 # Parameters
 PARAMS = {
     "access_key": API_KEY,
     "dep_iata": "EZE",
-    "airline_name": "British Airways",
-    "flight_iata": "BA244"
+    "airline_name": AIRLINE,
+    "flight_iata": FL_IATA,
 }
 
 # Functions
