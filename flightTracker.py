@@ -92,17 +92,17 @@ def print_link_to_map() -> None:
 
 def print_flight_info(data: dict) -> None:
     """Prints flight info"""
-    departure_time = datetime.datetime.fromisoformat(data["departure"]["actual"])
+    departure_time = datetime.datetime.strptime("2023-06-05T17:40:00", "%Y-%m-%dT%H:%M:%S")
     arrival_time = datetime.datetime.fromisoformat(data["arrival"]["scheduled"])
     time_now = datetime.datetime.now()
-    time_argentina = time_now - datetime.timedelta(hours=4)
+
     print(f"Flight: {data['flight']['iata']}")
     print(f"Airline: {data['airline']['name']}")
     print(f"Departure: {data['departure']['airport']}")
     print(f"Arrival: {data['arrival']['airport']}")
     print(f"Departure Time: {departure_time}")
     print(f"Arrival Time: {arrival_time}")
-    print(f"Local Time: {time_argentina}")
+    print(f"Total Time In Air: {arrival_time - departure_time}")
 
 
 # Testing
